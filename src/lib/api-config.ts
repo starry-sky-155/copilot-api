@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto"
 
 import type { State } from "./state"
 
+import { getConfig } from "./config"
 import { requestContext } from "./request-context"
 
 export const isOpencodeOauthApp = (): boolean => {
@@ -101,10 +102,11 @@ export const prepareInteractionHeaders = (
   headers: Record<string, string>,
 ) => {
   const sendInteractionHeaders = !isOpencodeOauthApp()
+  const forceAgent = getConfig().forceAgentInitiator === true
 
-  if (isSubagent) {
+  if (forceAgent || isSubagent) {
     headers["x-initiator"] = "agent"
-    if (sendInteractionHeaders) {
+    if (isSubagent && sendInteractionHeaders) {
       headers["x-interaction-type"] = "conversation-subagent"
     }
   }

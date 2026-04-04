@@ -20,6 +20,7 @@ export interface AppConfig {
   anthropicApiKey?: string
   useResponsesApiWebSearch?: boolean
   claudeTokenMultiplier?: number
+  forceAgentInitiator?: boolean
 }
 
 export interface ModelConfig {
