@@ -19,6 +19,7 @@ import {
   type AnthropicTextBlock,
   type AnthropicThinkingBlock,
   type AnthropicTool,
+  type AnthropicToolResultContentBlock,
   type AnthropicToolResultBlock,
   type AnthropicToolUseBlock,
   type AnthropicUserContentBlock,
@@ -28,6 +29,11 @@ import { mapOpenAIStopReasonToAnthropic } from "./utils"
 
 // Compatible with opencode, it will filter out blocks where the thinking text is empty, so we need add a default thinking text
 export const THINKING_TEXT = "Thinking..."
+
+type MappableContentBlock =
+  | AnthropicUserContentBlock
+  | AnthropicAssistantContentBlock
+  | AnthropicToolResultContentBlock
 
 // Payload translation
 export function translateToOpenAI(
@@ -216,23 +222,13 @@ function handleAssistantMessage(
 }
 
 function mapContent(
-  content:
-    | string
-    | Array<AnthropicUserContentBlock | AnthropicAssistantContentBlock>,
+  content: string | Array<MappableContentBlock>,
 ): string | Array<ContentPart> | null {
   if (typeof content === "string") {
     return content
   }
   if (!Array.isArray(content)) {
     return null
-  }
-
-  const hasImage = content.some((block) => block.type === "image")
-  if (!hasImage) {
-    return content
-      .filter((block): block is AnthropicTextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("\n\n")
   }
 
   const contentParts: Array<ContentPart> = []
@@ -251,10 +247,28 @@ function mapContent(
         })
         break
       }
+      case "document": {
+        contentParts.push(createDocumentTextPart())
+        break
+      }
+      case "tool_reference": {
+        contentParts.push({
+          type: "text",
+          text: `Tool ${block.tool_name} loaded`,
+        })
+        break
+      }
       // No default
     }
   }
   return contentParts
+}
+
+function createDocumentTextPart(): TextPart {
+  return {
+    type: "text",
+    text: "A PDF document was attached, but this api cannot send PDF inputs directly. Analyze using other tools.",
+  }
 }
 
 function translateAnthropicToolsToOpenAI(
