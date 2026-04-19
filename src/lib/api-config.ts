@@ -4,7 +4,7 @@ import { COMPACT_REQUEST, type CompactType } from "~/lib/compact"
 
 import type { State } from "./state"
 
-import { getConfig } from "./config"
+import { isForceAgentInitiatorEnabled } from "./config"
 import { getCachedOpencodeVersion } from "./opencode"
 import { requestContext } from "./request-context"
 
@@ -116,7 +116,7 @@ export const prepareInteractionHeaders = (
   headers: Record<string, string>,
 ) => {
   const sendInteractionHeaders = !isOpencodeOauthApp()
-  const forceAgent = getConfig().forceAgentInitiator === true
+  const forceAgent = isForceAgentInitiatorEnabled()
 
   if (forceAgent || isSubagent) {
     headers["x-initiator"] = "agent"

@@ -5,6 +5,7 @@ import {
   prepareMessageProxyHeaders,
 } from "../src/lib/api-config"
 import { COMPACT_AUTO_CONTINUE, COMPACT_REQUEST } from "../src/lib/compact"
+import { isForceAgentInitiatorEnabled } from "../src/lib/config"
 
 const originalOauthApp = process.env.COPILOT_API_OAUTH_APP
 
@@ -63,4 +64,12 @@ test("prepareForCompact marks compact traffic as agent initiated", () => {
   expect(compactHeaders["x-initiator"]).toBe("agent")
   expect(autoContinueHeaders["x-initiator"]).toBe("agent")
   expect(normalHeaders["x-initiator"]).toBe("user")
+})
+
+test("forceAgentInitiator defaults to enabled", () => {
+  expect(isForceAgentInitiatorEnabled({})).toBe(true)
+  expect(isForceAgentInitiatorEnabled({ forceAgentInitiator: true })).toBe(true)
+  expect(isForceAgentInitiatorEnabled({ forceAgentInitiator: false })).toBe(
+    false,
+  )
 })

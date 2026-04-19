@@ -100,6 +100,7 @@ const defaultConfig: AppConfig = {
   useFunctionApplyPatch: true,
   useMessagesApi: true,
   useResponsesApiWebSearch: true,
+  forceAgentInitiator: true,
 }
 
 let cachedConfig: AppConfig | null = null
@@ -160,8 +161,13 @@ function mergeDefaultConfig(config: AppConfig): {
 
   const hasExtraPromptChanges = missingExtraPromptModels.length > 0
   const hasReasoningEffortChanges = missingReasoningEffortModels.length > 0
+  const hasForceAgentInitiatorChanges = config.forceAgentInitiator === undefined
 
-  if (!hasExtraPromptChanges && !hasReasoningEffortChanges) {
+  if (
+    !hasExtraPromptChanges
+    && !hasReasoningEffortChanges
+    && !hasForceAgentInitiatorChanges
+  ) {
     return { mergedConfig: config, changed: false }
   }
 
@@ -176,6 +182,8 @@ function mergeDefaultConfig(config: AppConfig): {
         ...defaultModelReasoningEfforts,
         ...modelReasoningEfforts,
       },
+      forceAgentInitiator:
+        config.forceAgentInitiator ?? defaultConfig.forceAgentInitiator,
     },
     changed: true,
   }
@@ -330,4 +338,10 @@ export function isResponsesApiWebSearchEnabled(): boolean {
 export function getClaudeTokenMultiplier(): number {
   const config = getConfig()
   return config.claudeTokenMultiplier ?? 1.15
+}
+
+export function isForceAgentInitiatorEnabled(
+  config: AppConfig = getConfig(),
+): boolean {
+  return config.forceAgentInitiator ?? defaultConfig.forceAgentInitiator ?? true
 }
